@@ -1,0 +1,185 @@
+
+-- ProductionLines
+CREATE TABLE ProductionLines (
+    LineID INT PRIMARY KEY,
+    LineName VARCHAR(100)
+);
+
+-- ProductionBatches
+CREATE TABLE ProductionBatches (
+    BatchID INT PRIMARY KEY,
+    WorkOrderID INT, -- Reference to ERP.WorkOrders
+    LineID INT,
+    ActualStart DATETIME,
+    ActualEnd DATETIME,
+    ProducedQty DECIMAL(18,4),
+    ProducedLot VARCHAR(50),
+    Status VARCHAR(20),
+    FOREIGN KEY (LineID) REFERENCES ProductionLines(LineID)
+);
+
+-- BatchMaterialConsumption
+CREATE TABLE BatchMaterialConsumption (
+    BatchID INT,
+    ItemID INT, -- Reference to ERP.Items
+    InputLot VARCHAR(50),
+    QuantityUsed DECIMAL(18,4),
+    FOREIGN KEY (BatchID) REFERENCES ProductionBatches(BatchID)
+);
+
+-- FinishedGoodsStaging
+CREATE TABLE FinishedGoodsStaging (
+    FGID INT PRIMARY KEY,
+    BatchID INT,
+    ItemID INT, -- Reference to ERP.Items
+    WarehouseID INT, -- Reference to ERP.Warehouses
+    LotNumber VARCHAR(50),
+    Quantity DECIMAL(18,4),
+    Timestamp DATETIME,
+    FOREIGN KEY (BatchID) REFERENCES ProductionBatches(BatchID)
+);
+
+-- Operators
+CREATE TABLE Operators (
+    OperatorID INT PRIMARY KEY,
+    Name VARCHAR(100),
+    Shift VARCHAR(10)
+);
+
+-- OperatorLogins
+CREATE TABLE OperatorLogins (
+    LoginID INT PRIMARY KEY,
+    BatchID INT,
+    OperatorID INT,
+    LoginTime DATETIME,
+    LogoutTime DATETIME,
+    FOREIGN KEY (BatchID) REFERENCES ProductionBatches(BatchID),
+    FOREIGN KEY (OperatorID) REFERENCES Operators(OperatorID)
+);
+
+-- LineStatusLogs
+CREATE TABLE LineStatusLogs (
+    LogID INT PRIMARY KEY,
+    LineID INT,
+    Status VARCHAR(20),
+    Timestamp DATETIME,
+    FOREIGN KEY (LineID) REFERENCES ProductionLines(LineID)
+);
+
+-- DowntimeEvents
+CREATE TABLE DowntimeEvents (
+    EventID INT PRIMARY KEY,
+    LineID INT,
+    StartTime DATETIME,
+    EndTime DATETIME,
+    ReasonCode VARCHAR(50),
+    Description VARCHAR(255),
+    FOREIGN KEY (LineID) REFERENCES ProductionLines(LineID)
+);
+
+-- EfficiencyLogs
+CREATE TABLE EfficiencyLogs (
+    EntryID INT PRIMARY KEY,
+    BatchID INT,
+    PlannedQty DECIMAL(18,4),
+    ActualQty DECIMAL(18,4),
+    YieldPercent DECIMAL(5,2),
+    FOREIGN KEY (BatchID) REFERENCES ProductionBatches(BatchID)
+);
+INSERT INTO ProductionLines (LineID, LineName) VALUES
+(1, 'Line 1'),
+(2, 'Line 2'),
+(3, 'Line 3');
+INSERT INTO ProductionBatches (BatchID, WorkOrderID, LineID, ActualStart, ActualEnd, ProducedQty, ProducedLot, Status) VALUES
+(1, 1, 3, '2025-07-04 00:57:41', '2025-07-04 09:57:41', 359.47, 'PRODLOT00001', 'Complete'),
+(2, 2, 1, '2025-06-21 00:57:41', '2025-06-21 04:57:41', 122.35, 'PRODLOT00002', 'Complete'),
+(3, 3, 2, '2025-06-24 00:57:41', '2025-06-24 10:57:41', 101.35, 'PRODLOT00003', 'Complete'),
+(4, 4, 3, '2025-06-27 00:57:41', '2025-06-27 04:57:41', 126.36, 'PRODLOT00004', 'Complete'),
+(5, 5, 1, '2025-07-03 00:57:41', '2025-07-03 08:57:41', 346.83, 'PRODLOT00005', 'Complete'),
+(6, 6, 3, '2025-06-26 00:57:41', '2025-06-26 10:57:41', 177.61, 'PRODLOT00006', 'Complete'),
+(7, 7, 2, '2025-06-24 00:57:41', '2025-06-24 07:57:41', 235.35, 'PRODLOT00007', 'Complete'),
+(8, 8, 1, '2025-06-26 00:57:41', '2025-06-26 09:57:41', 394.09, 'PRODLOT00008', 'Complete'),
+(9, 9, 1, '2025-06-20 00:57:41', '2025-06-20 06:57:41', 372.62, 'PRODLOT00009', 'Complete'),
+(10, 10, 2, '2025-06-25 00:57:41', '2025-06-25 04:57:41', 337.74, 'PRODLOT00010', 'Complete');
+INSERT INTO BatchMaterialConsumption (BatchID, ItemID, InputLot, QuantityUsed) VALUES
+(1, 6, 'LOT00018', 29.18),
+(8, 4, 'LOT00016', 20.43),
+(7, 1, 'LOT00021', 32.91),
+(10, 2, 'LOT00008', 40.42),
+(4, 10, 'LOT00007', 19.31),
+(6, 5, 'LOT00002', 41.69),
+(4, 8, 'LOT00014', 49.33),
+(6, 2, 'LOT00002', 48.61),
+(5, 9, 'LOT00020', 13.48),
+(8, 6, 'LOT00010', 35.97),
+(1, 6, 'LOT00012', 16.92),
+(4, 4, 'LOT00024', 11.08),
+(2, 5, 'LOT00004', 47.13),
+(2, 7, 'LOT00030', 36.27),
+(10, 10, 'LOT00022', 21.09),
+(8, 6, 'LOT00020', 11.47),
+(7, 1, 'LOT00013', 31.71),
+(4, 4, 'LOT00006', 37.41),
+(2, 7, 'LOT00017', 45.65),
+(3, 1, 'LOT00017', 41.5);
+INSERT INTO FinishedGoodsStaging (FGID, BatchID, ItemID, WarehouseID, LotNumber, Quantity, Timestamp) VALUES
+(1, 1, 15, 2, 'FGLOT00001', 107.94, '2025-07-10 00:57:41'),
+(2, 2, 20, 2, 'FGLOT00002', 362.25, '2025-07-10 00:57:41'),
+(3, 3, 11, 2, 'FGLOT00003', 438.27, '2025-07-10 00:57:41'),
+(4, 4, 13, 3, 'FGLOT00004', 262.21, '2025-07-10 00:57:41'),
+(5, 5, 17, 3, 'FGLOT00005', 336.31, '2025-07-10 00:57:41'),
+(6, 6, 17, 1, 'FGLOT00006', 290.42, '2025-07-10 00:57:41'),
+(7, 7, 19, 2, 'FGLOT00007', 229.33, '2025-07-10 00:57:41'),
+(8, 8, 14, 2, 'FGLOT00008', 443.92, '2025-07-10 00:57:41'),
+(9, 9, 20, 3, 'FGLOT00009', 132.99, '2025-07-10 00:57:41'),
+(10, 10, 11, 2, 'FGLOT00010', 121.64, '2025-07-10 00:57:41');
+INSERT INTO Operators (OperatorID, Name, Shift) VALUES
+(1, 'Michelle Davis', 'Day'),
+(2, 'Daniel Johnson', 'Night'),
+(3, 'Megan Pratt', 'Day'),
+(4, 'James Hess', 'Day'),
+(5, 'William Wood', 'Night');
+INSERT INTO OperatorLogins (LoginID, BatchID, OperatorID, LoginTime, LogoutTime) VALUES
+(1, 2, 3, '2025-07-08 22:57:41', '2025-07-09 06:57:41'),
+(2, 1, 3, '2025-07-08 05:57:41', '2025-07-08 13:57:41'),
+(3, 3, 1, '2025-07-08 11:57:41', '2025-07-08 19:57:41'),
+(4, 2, 2, '2025-07-08 12:57:41', '2025-07-08 20:57:41'),
+(5, 3, 1, '2025-07-08 21:57:41', '2025-07-09 05:57:41'),
+(6, 7, 2, '2025-07-08 06:57:41', '2025-07-08 14:57:41'),
+(7, 4, 1, '2025-07-09 09:57:41', '2025-07-09 17:57:41'),
+(8, 8, 4, '2025-07-08 12:57:41', '2025-07-08 20:57:41'),
+(9, 6, 1, '2025-07-09 12:57:41', '2025-07-09 20:57:41'),
+(10, 5, 5, '2025-07-09 02:57:41', '2025-07-09 10:57:41');
+INSERT INTO LineStatusLogs (LogID, LineID, Status, Timestamp) VALUES
+(1, 2, 'Cleaning', '2025-07-10 00:27:41'),
+(2, 1, 'Fault', '2025-07-09 23:57:41'),
+(3, 1, 'Cleaning', '2025-07-09 23:27:41'),
+(4, 1, 'Fault', '2025-07-09 22:57:41'),
+(5, 3, 'Running', '2025-07-09 22:27:41'),
+(6, 1, 'Cleaning', '2025-07-09 21:57:41'),
+(7, 1, 'Fault', '2025-07-09 21:27:41'),
+(8, 2, 'Fault', '2025-07-09 20:57:41'),
+(9, 1, 'Idle', '2025-07-09 20:27:41'),
+(10, 3, 'Idle', '2025-07-09 19:57:41'),
+(11, 3, 'Running', '2025-07-09 19:27:41'),
+(12, 3, 'Cleaning', '2025-07-09 18:57:41'),
+(13, 3, 'Fault', '2025-07-09 18:27:41'),
+(14, 1, 'Idle', '2025-07-09 17:57:41'),
+(15, 1, 'Fault', '2025-07-09 17:27:41');
+INSERT INTO DowntimeEvents (EventID, LineID, StartTime, EndTime, ReasonCode, Description) VALUES
+(1, 2, '2025-07-06 21:57:41', '2025-07-06 22:26:41', 'FAULT', 'Unexpected downtime due to pressure drop'),
+(2, 1, '2025-07-06 04:57:41', '2025-07-06 05:38:41', 'FAULT', 'Unexpected downtime due to pressure drop'),
+(3, 3, '2025-07-07 20:57:41', '2025-07-07 22:15:41', 'FAULT', 'Unexpected downtime due to pressure drop'),
+(4, 1, '2025-07-06 22:57:41', '2025-07-07 00:16:41', 'FAULT', 'Unexpected downtime due to pressure drop'),
+(5, 1, '2025-07-08 21:57:41', '2025-07-08 22:53:41', 'FAULT', 'Unexpected downtime due to pressure drop');
+INSERT INTO EfficiencyLogs (EntryID, BatchID, PlannedQty, ActualQty, YieldPercent) VALUES
+(1, 1, 292.3, 275.07, 94.11),
+(2, 2, 192.05, 168.9, 87.95),
+(3, 3, 118.81, 112.08, 94.34),
+(4, 4, 397.16, 344.4, 86.72),
+(5, 5, 336.07, 318.23, 94.69),
+(6, 6, 382.24, 372.36, 97.42),
+(7, 7, 137.03, 131.35, 95.85),
+(8, 8, 277.66, 257.37, 92.69),
+(9, 9, 348.83, 301.55, 86.45),
+(10, 10, 485.79, 490.64, 101.0);
