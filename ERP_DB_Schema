@@ -1,0 +1,211 @@
+CREATE TABLE Items (
+    ItemID INT PRIMARY KEY,
+    ItemCode VARCHAR(50),
+    ItemName VARCHAR(100),
+    ItemType VARCHAR(20), -- Raw, WIP, FG
+    UOM VARCHAR(10),
+    StandardCost DECIMAL(18,4),
+    IsLotTracked BIT
+);
+
+-- Warehouses
+CREATE TABLE Warehouses (
+    WarehouseID INT PRIMARY KEY,
+    Name VARCHAR(100),
+    LocationCode VARCHAR(20)
+);
+
+-- Inventory
+CREATE TABLE Inventory (
+    InventoryID INT PRIMARY KEY,
+    ItemID INT,
+    WarehouseID INT,
+    LotNumber VARCHAR(50),
+    Quantity DECIMAL(18,4),
+    FOREIGN KEY (ItemID) REFERENCES Items(ItemID),
+    FOREIGN KEY (WarehouseID) REFERENCES Warehouses(WarehouseID)
+);
+
+-- Vendors
+CREATE TABLE Vendors (
+    VendorID INT PRIMARY KEY,
+    VendorName VARCHAR(100),
+    ContactEmail VARCHAR(100)
+);
+
+-- PurchaseOrders
+CREATE TABLE PurchaseOrders (
+    POID INT PRIMARY KEY,
+    VendorID INT,
+    OrderDate DATE,
+    Status VARCHAR(20),
+    FOREIGN KEY (VendorID) REFERENCES Vendors(VendorID)
+);
+
+-- PurchaseOrderLines
+CREATE TABLE PurchaseOrderLines (
+    POLineID INT PRIMARY KEY,
+    POID INT,
+    ItemID INT,
+    QuantityOrdered DECIMAL(18,4),
+    QuantityReceived DECIMAL(18,4),
+    FOREIGN KEY (POID) REFERENCES PurchaseOrders(POID),
+    FOREIGN KEY (ItemID) REFERENCES Items(ItemID)
+);
+
+-- DemandForecast
+CREATE TABLE DemandForecast (
+    ForecastID INT PRIMARY KEY,
+    ItemID INT,
+    ForecastMonth DATE,
+    ForecastQty DECIMAL(18,4),
+    FOREIGN KEY (ItemID) REFERENCES Items(ItemID)
+);
+
+-- WorkOrders
+CREATE TABLE WorkOrders (
+    WorkOrderID INT PRIMARY KEY,
+    ItemID INT,
+    ScheduledQty DECIMAL(18,4),
+    ScheduledStart DATE,
+    ScheduledEnd DATE,
+    Status VARCHAR(20),
+    FOREIGN KEY (ItemID) REFERENCES Items(ItemID)
+);
+
+-- ItemFormulations
+CREATE TABLE ItemFormulations (
+    ParentItemID INT,
+    ComponentItemID INT,
+    QuantityRequired DECIMAL(18,4),
+    PRIMARY KEY (ParentItemID, ComponentItemID),
+    FOREIGN KEY (ParentItemID) REFERENCES Items(ItemID),
+    FOREIGN KEY (ComponentItemID) REFERENCES Items(ItemID)
+);
+INSERT INTO Items (ItemID, ItemCode, ItemName, ItemType, UOM, StandardCost, IsLotTracked) VALUES
+(1, 'ITEM0001', 'Chemical Product 1', 'Raw', 'KG', 72.01, 0),
+(2, 'ITEM0002', 'Chemical Product 2', 'Raw', 'KG', 23.35, 1),
+(3, 'ITEM0003', 'Chemical Product 3', 'WIP', 'KG', 26.13, 0),
+(4, 'ITEM0004', 'Chemical Product 4', 'WIP', 'GAL', 27.66, 0),
+(5, 'ITEM0005', 'Chemical Product 5', 'Raw', 'L', 6.48, 1),
+(6, 'ITEM0006', 'Chemical Product 6', 'FG', 'L', 23.92, 1),
+(7, 'ITEM0007', 'Chemical Product 7', 'WIP', 'KG', 25.69, 1),
+(8, 'ITEM0008', 'Chemical Product 8', 'FG', 'GAL', 19.04, 1),
+(9, 'ITEM0009', 'Chemical Product 9', 'FG', 'KG', 59.25, 1),
+(10, 'ITEM0010', 'Chemical Product 10', 'FG', 'GAL', 42.96, 1),
+(11, 'ITEM0011', 'Chemical Product 11', 'Raw', 'KG', 49.52, 1),
+(12, 'ITEM0012', 'Chemical Product 12', 'Raw', 'GAL', 48.61, 1),
+(13, 'ITEM0013', 'Chemical Product 13', 'FG', 'GAL', 56.92, 0),
+(14, 'ITEM0014', 'Chemical Product 14', 'WIP', 'KG', 9.1, 1),
+(15, 'ITEM0015', 'Chemical Product 15', 'Raw', 'L', 64.46, 0),
+(16, 'ITEM0016', 'Chemical Product 16', 'Raw', 'GAL', 96.5, 1),
+(17, 'ITEM0017', 'Chemical Product 17', 'FG', 'KG', 35.06, 1),
+(18, 'ITEM0018', 'Chemical Product 18', 'WIP', 'L', 69.77, 0),
+(19, 'ITEM0019', 'Chemical Product 19', 'WIP', 'L', 11.35, 0),
+(20, 'ITEM0020', 'Chemical Product 20', 'WIP', 'L', 77.87, 0);
+INSERT INTO Warehouses (WarehouseID, Name, LocationCode) VALUES
+(1, 'Warehouse 1', 'WH01'),
+(2, 'Warehouse 2', 'WH02'),
+(3, 'Warehouse 3', 'WH03');
+INSERT INTO Inventory (InventoryID, ItemID, WarehouseID, LotNumber, Quantity) VALUES
+(1, 13, 1, 'LOT00001', 174.06),
+(2, 14, 2, 'LOT00002', 969.0),
+(3, 6, 1, 'LOT00003', 211.6),
+(4, 13, 2, 'LOT00004', 325.62),
+(5, 14, 1, 'LOT00005', 535.54),
+(6, 20, 2, 'LOT00006', 480.75),
+(7, 14, 1, 'LOT00007', 931.18),
+(8, 7, 3, 'LOT00008', 716.29),
+(9, 20, 2, 'LOT00009', 371.67),
+(10, 4, 2, 'LOT00010', 250.42),
+(11, 16, 2, 'LOT00011', 157.5),
+(12, 5, 1, 'LOT00012', 430.83),
+(13, 19, 3, 'LOT00013', 57.56),
+(14, 19, 2, 'LOT00014', 780.84),
+(15, 9, 3, 'LOT00015', 255.75),
+(16, 1, 2, 'LOT00016', 846.72),
+(17, 9, 2, 'LOT00017', 215.5),
+(18, 16, 2, 'LOT00018', 66.46),
+(19, 6, 1, 'LOT00019', 880.18),
+(20, 18, 1, 'LOT00020', 265.87),
+(21, 11, 1, 'LOT00021', 306.01),
+(22, 18, 1, 'LOT00022', 223.72),
+(23, 13, 3, 'LOT00023', 906.41),
+(24, 9, 3, 'LOT00024', 795.69),
+(25, 9, 2, 'LOT00025', 154.04),
+(26, 5, 1, 'LOT00026', 859.65),
+(27, 7, 2, 'LOT00027', 144.16),
+(28, 3, 1, 'LOT00028', 122.05),
+(29, 2, 3, 'LOT00029', 213.74),
+(30, 14, 2, 'LOT00030', 150.79);
+INSERT INTO Vendors (VendorID, VendorName, ContactEmail) VALUES
+(1, 'Vendor 1', 'rschmidt@young-murphy.com'),
+(2, 'Vendor 2', 'johnlewis@hotmail.com'),
+(3, 'Vendor 3', 'rmurphy@acevedo-rogers.com'),
+(4, 'Vendor 4', 'zrussell@gmail.com'),
+(5, 'Vendor 5', 'mjimenez@hicks.com');
+INSERT INTO PurchaseOrders (POID, VendorID, OrderDate, Status) VALUES
+(1, 1, '2025-04-29', 'Open'),
+(2, 5, '2025-06-12', 'Open'),
+(3, 1, '2025-06-06', 'Open'),
+(4, 3, '2025-06-14', 'Open'),
+(5, 4, '2025-05-11', 'Open'),
+(6, 3, '2025-05-21', 'Open'),
+(7, 5, '2025-04-29', 'Open'),
+(8, 5, '2025-06-24', 'Open'),
+(9, 2, '2025-05-17', 'Open'),
+(10, 1, '2025-06-24', 'Open');
+INSERT INTO PurchaseOrderLines (POLineID, POID, ItemID, QuantityOrdered, QuantityReceived) VALUES
+(1, 10, 19, 178.16, 98.0),
+(2, 1, 14, 431.51, 76.88),
+(3, 6, 5, 470.83, 84.7),
+(4, 3, 15, 319.4, 93.3),
+(5, 1, 14, 424.7, 59.29),
+(6, 6, 15, 275.35, 64.41),
+(7, 3, 7, 204.9, 55.22),
+(8, 1, 3, 260.7, 50.1),
+(9, 4, 5, 240.84, 56.17),
+(10, 3, 13, 399.54, 69.31),
+(11, 7, 7, 100.33, 85.32),
+(12, 4, 20, 271.95, 69.09),
+(13, 6, 20, 390.77, 63.25),
+(14, 4, 11, 458.93, 99.63),
+(15, 9, 9, 428.22, 52.33),
+(16, 5, 14, 474.79, 98.63),
+(17, 2, 4, 420.85, 63.93),
+(18, 7, 19, 346.03, 60.87),
+(19, 1, 3, 388.79, 51.31),
+(20, 10, 8, 388.68, 66.52);
+INSERT INTO DemandForecast (ForecastID, ItemID, ForecastMonth, ForecastQty) VALUES
+(1, 7, '2025-04-29', 909.16),
+(2, 6, '2025-03-05', 1125.13),
+(3, 14, '2025-01-14', 1719.39),
+(4, 12, '2025-05-15', 1288.92),
+(5, 2, '2025-02-06', 1772.34),
+(6, 9, '2025-03-06', 893.74),
+(7, 8, '2025-06-08', 1077.19),
+(8, 12, '2025-05-19', 1703.55),
+(9, 19, '2025-02-01', 918.04),
+(10, 14, '2025-03-13', 1189.21);
+INSERT INTO WorkOrders (WorkOrderID, ItemID, ScheduledQty, ScheduledStart, ScheduledEnd, Status) VALUES
+(1, 1, 201.04, '2025-07-07', '2025-07-10', 'Scheduled'),
+(2, 9, 133.05, '2025-06-15', '2025-06-16', 'Scheduled'),
+(3, 8, 260.45, '2025-07-01', '2025-07-03', 'Scheduled'),
+(4, 1, 182.01, '2025-06-27', '2025-07-02', 'Scheduled'),
+(5, 7, 385.55, '2025-06-25', '2025-06-26', 'Scheduled'),
+(6, 3, 242.41, '2025-06-28', '2025-07-02', 'Scheduled'),
+(7, 14, 209.84, '2025-06-22', '2025-06-23', 'Scheduled'),
+(8, 2, 113.7, '2025-06-21', '2025-06-22', 'Scheduled'),
+(9, 1, 366.99, '2025-06-18', '2025-06-19', 'Scheduled'),
+(10, 16, 287.9, '2025-07-09', '2025-07-13', 'Scheduled');
+INSERT INTO ItemFormulations (ParentItemID, ComponentItemID, QuantityRequired) VALUES
+(14, 1, 10.82),
+(12, 8, 7.98),
+(16, 5, 6.84),
+(19, 7, 10.42),
+(18, 5, 10.74),
+(11, 9, 18.1),
+(13, 1, 8.48),
+(15, 7, 16.13),
+(19, 10, 9.34),
+(18, 10, 12.01);
